@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.3
+// @version      0.3.1
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -32,7 +32,7 @@ const userlist = [
     "周欣",
     "陈雨昕",
     "叶卓睿",
-    "魏衍芃",
+    "<span style=\"font-weight: bold\"><span style=\"color: black\">魏</span><span style=\"color: red\">衍芃</span></span>",
     "林昊翰",
     "李白天",
     "代晨昕",
@@ -137,6 +137,33 @@ function getUserInfomation(id) {
 }
 
 async function render() {
+    $('*').each(function() {
+        if (this.innerHTML.match(/^ioi2021_[0-9]+$/g)) {
+            let uid = parseInt(this.innerHTML.match(/ioi2021_[0-9]+/g)[0].slice(8));
+            let name = userlist[uid];
+            if (name) {
+                console.log(uid, name);
+                this.innerHTML = '<span style="font-weight:normal">' + name + '</span>';
+            }
+        }
+    });
+
+    if (location.pathname.startsWith('/problems')) {
+        $(".table tr td:first-child").each(function () {
+            let pid = this.innerHTML.slice(1);
+            let status = db.query(pid);
+            this.style.color = colors[status];
+            if (status) {
+                this.style['font-weight'] = 'bold';
+            } else {
+                this.style['font-weight'] = 'normal';
+            }
+            console.log(pid, status);
+        });
+    }
+}
+
+async function mainRender() {
     $('.navbar .navbar-nav').append('<li><a href="/ranklist">排行榜</a></li>')
 
     if (location.pathname == '/ranklist') {
@@ -167,30 +194,7 @@ async function render() {
         }
     }
 
-    $('*').each(function() {
-        if (this.innerHTML.match(/^ioi2021_[0-9]+$/g)) {
-            let uid = parseInt(this.innerHTML.match(/ioi2021_[0-9]+/g)[0].slice(8));
-            let name = userlist[uid];
-            if (name) {
-                console.log(uid, name);
-                this.innerHTML = '<span style="font-weight:normal">' + name + '</span>';
-            }
-        }
-    });
-
-    if (location.pathname.startsWith('/problems')) {
-        $(".table tr td:first-child").each(function () {
-            let pid = this.innerHTML.slice(1);
-            let status = db.query(pid);
-            this.style.color = colors[status];
-            if (status) {
-                this.style['font-weight'] = 'bold';
-            } else {
-                this.style['font-weight'] = 'normal';
-            }
-            console.log(pid, status);
-        });
-    }
+    render();
 }
 
 if (location.pathname.startsWith('/problems')) {
@@ -203,4 +207,4 @@ if (location.pathname.startsWith('/problems')) {
     });
 }
 
-render();
+mainRender();
