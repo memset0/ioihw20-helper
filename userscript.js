@@ -1,11 +1,15 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.2
+// @version      0.3
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
 // @match        https://ioihw20.duck-ac.cn/*
+// @updateURL    https://raw.githubusercontent.com/memset0/ioihw20-helper/master/userscript.js
+// @downloadURL  https://raw.githubusercontent.com/memset0/ioihw20-helper/master/userscript.js
+// @supportURL   https://github.com/memset0/ioihw20-helper/issues
+// @homepage     https://github.com/memset0/ioihw20-helper
 // @grant        none
 // ==/UserScript==
 
