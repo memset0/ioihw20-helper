@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.1
+// @version      0.2
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -117,7 +117,52 @@ const db = {
     },
 };
 
-function render() {
+function getUserInfomation(id) {
+    id = id < 10 ? '0' + String(id) : String(id);
+    return $.get({
+        url: `https://ioihw20.duck-ac.cn/user/profile/ioi2021_${id}`,
+    }).then((res) => {
+        let info = res.match(/<h4 class="list-group-item-heading">格言<\/h4>\s+<p class="list-group-item-text">(.*?)<\/p>/)[1];
+        let count = parseInt(res.match(/AC 过的题目：共 (\d+) 道题/)[1]);
+        return {
+            id: id,
+            info: info,
+            count: count,
+        };
+    });
+}
+
+async function render() {
+    $('.navbar .navbar-nav').append('<li><a href="/ranklist">排行榜</a></li>')
+
+    if (location.pathname == '/ranklist') {
+        let userListPromised = [];
+        $('.pagination').remove();
+        $('.table tbody tr').remove();
+        for (let userId = 0; userId < 81; userId++) {
+            userListPromised.push(getUserInfomation(userId));
+        }
+        let userList = await Promise.all(userListPromised);
+        userList.sort((firstUser, secondUser) => {
+            console.log(firstUser, secondUser);
+            if (firstUser.count == secondUser.count) {
+                return parseInt(firstUser.id) - parseInt(secondUser.id);
+            }
+            return secondUser.count - firstUser.count;
+        });
+        console.log(userList);
+        $('.table thead tr th:last-child').text('通过数');
+        for (let user of userList) {
+            console.log(user);
+            let $tr = $('<tr></tr>');
+            $tr.append(`<td>${user.id}</td>`);
+            $tr.append(`<td><a class="uoj-username" href="https://ioihw20.duck-ac.cn/user/profile/ioi2021_${user.id}" style="color:rgb(75,175,178)">ioi2021_${user.id}</a></td>`);
+            $tr.append(`<td>${user.info}</td>`);
+            $tr.append(`<td>${user.count}</td>`);
+            $('.table tbody').append($tr);
+        }
+    }
+
     $('*').each(function() {
         if (this.innerHTML.match(/^ioi2021_[0-9]+$/g)) {
             let uid = parseInt(this.innerHTML.match(/ioi2021_[0-9]+/g)[0].slice(8));
