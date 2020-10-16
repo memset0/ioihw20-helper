@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.4
+// @version      0.4.1
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -32,7 +32,7 @@ const userlist = [
     "周欣",
     "陈雨昕",
     "叶卓睿",
-    "<span style=\"font-weight: bold\"><span style=\"color: black\">魏</span><span style=\"color: red\">衍芃</span></span>",
+    "魏衍芃",
     "林昊翰",
     "李白天",
     "代晨昕",
@@ -142,6 +142,10 @@ function getUserInfomation(id) {
     }).then((res) => {
         let info = res.match(/<h4 class="list-group-item-heading">格言<\/h4>\s+<p class="list-group-item-text">(.*?)<\/p>/)[1];
         let count = parseInt(res.match(/AC 过的题目：共 (\d+) 道题/)[1]);
+        if (res.match(/"\/problem\/1"/)) {
+            // A + B Problem 不统计在内
+            --count;
+        }
         return {
             id: id,
             info: info,
