@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.3.1
+// @version      0.4
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -121,6 +121,20 @@ const db = {
     },
 };
 
+const dbWinner = {
+    update(winner) {
+        localStorage.setItem('hw-winner', String(winner));
+    },
+    query() {
+        let plain = localStorage.getItem('hw-winner');
+        if (isNaN(parseInt(plain))) {
+            return -1;
+        } else {
+            return parseInt(plain);
+        }
+    }
+};
+
 function getUserInfomation(id) {
     id = id < 10 ? '0' + String(id) : String(id);
     return $.get({
@@ -141,9 +155,12 @@ async function render() {
         if (this.innerHTML.match(/^ioi2021_[0-9]+$/g)) {
             let uid = parseInt(this.innerHTML.match(/ioi2021_[0-9]+/g)[0].slice(8));
             let name = userlist[uid];
+            if (uid == dbWinner.query()) {
+                name += '<sup><span style="color: red">卷王</span></sup>';
+            }
             if (name) {
                 console.log(uid, name);
-                this.innerHTML = '<span style="font-weight:normal">' + name + '</span>';
+                this.innerHTML = '<span style="font-weight: normal">' + name + '</span>';
             }
         }
     });
@@ -181,6 +198,9 @@ async function mainRender() {
             }
             return secondUser.count - firstUser.count;
         });
+        if (userList.length) {
+            dbWinner.update(userList[0].id);
+        }
         console.log(userList);
         $('.table thead tr th:last-child').text('通过数');
         for (let user of userList) {
