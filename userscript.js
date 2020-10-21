@@ -1,24 +1,23 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.4.3
+// @version      0.5.4
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
 // @match        https://ioihw20.duck-ac.cn/*
-// @updateURL    https://raw.githubusercontent.com/memset0/ioihw20-helper/master/userscript.js
-// @downloadURL  https://raw.githubusercontent.com/memset0/ioihw20-helper/master/userscript.js
+// @updateURL    https://cdn.jsdelivr.net/gh/memset0/ioihw20-helper@master/userscript.js
+// @downloadURL  https://cdn.jsdelivr.net/gh/memset0/ioihw20-helper@master/userscript.js
 // @supportURL   https://github.com/memset0/ioihw20-helper/issues
 // @homepage     https://github.com/memset0/ioihw20-helper
 // @grant        none
 // ==/UserScript==
 
-const colors = [
-    'black',
-    'green',
-    'yellow',
-    'red',
-];
+const config = {
+    url: {
+        codeforces: 'https://www.codeforces.com',
+    },
+};
 
 const userlist = [
     "虞皓翔",
@@ -104,6 +103,72 @@ const userlist = [
     "谢琳涵",
 ];
 
+const problemShortcutList = [
+    'UC', 'DG', 'RB',
+    'HC', 'IB', 'FJ',
+    'GK', 'UH', 'QH',
+    'EE', 'DJ', 'IH',
+    'HL', 'MI', 'EJ',
+    'MB', 'UI', 'ED',
+    'AA', 'BG', 'ML',
+    'CF', 'TE', 'QG',
+    'PH', 'UJ', 'BB',
+    'CI', 'SD', 'NG',
+    'DK', 'LD', 'IJ',
+    'NC', 'BJ', 'FK',
+    'CH', 'NJ', 'RH',
+    'QF', 'BE', 'KI',
+    'AC', 'PG', 'HM',
+    'PJ', 'ID', 'EG',
+    'SI', 'KC', 'GI',
+    'OG', 'CK', 'DB',
+    'QE', 'GH', 'NI',
+    'OL', 'KA', 'MG',
+    'SG', 'NL', 'KH',
+    'QJ', 'KG', 'AB',
+    'KD', 'IL', 'NF',
+    'CM', 'NE', 'HD',
+    'DH', 'EC', 'BM',
+    'LC', 'CD', 'JI',
+    'DL', 'ME', 'PE',
+    'LI', 'AI', 'RJ',
+    'SF', 'II', 'HG',
+    'RE', 'LL', 'OA',
+    'FB', 'QD', 'DA',
+    'TC', 'AE', 'CB',
+    'GF', 'AG', 'JC',
+    'PA', 'TH', 'EH',
+    'AJ', 'TK', 'EI',
+    'UL', 'AF', 'SK',
+    'BH', 'RD', 'OK',
+    'FC', 'JD', 'OE',
+    'TF', 'FF', 'DD',
+    'CJ', 'HK', 'MJ',
+    'FG', 'GL', 'AL',
+    'FI', 'IC', 'QC',
+    'MD', 'OJ', 'HI',
+    'KK', 'JH', 'OB',
+    'BK', 'GJ', 'KE',
+    'CA', 'IK', 'LE',
+    'RI', 'LK', 'PD',
+    'JE', 'LB', 'HB',
+    'BL', 'RG', 'AH',
+    'AK', 'GG', 'JG',
+];
+
+const problemSourceIdList = [
+    101221, 101239, 101242, 101471, 102482, 102511, 101630,
+    101190, 100851, 100553, 100307, 101620, 101173, 101480,
+    100543, 100299, 101612, 101142, 100801, 100531, 100269
+];
+
+const colors = [
+    'black',
+    'green',
+    'yellow',
+    'red',
+];
+
 const db = {
     load() {
         return JSON.parse(localStorage.getItem('hw') || '[]');
@@ -135,6 +200,33 @@ const dbWinner = {
     }
 };
 
+function getProblemInfo(problemId) {
+    let problemType = problemId == 1 ? '测试题' : (problemId % 4 ? '作业题' : '自选题');
+
+    let shortcut, shortcutId, contestId
+    if (problemId >= 101) {
+        shortcutId = problemId - 101 - ((problemId - 101) >> 2);
+        shortcut = problemShortcutList[shortcutId];
+        contestId = problemType == '作业题' ? problemSourceIdList[shortcut.charCodeAt(0) - 65] : -1;
+    }
+
+    let authorId, authorName;
+    if (problemId == 1) authorName = 'root';
+    else {
+        authorId = (problemId - 101) >> 2;
+        authorName = 'ioi2021_' + (authorId < 10 ? '0' : '') + String(authorId);
+    }
+
+    return {
+        problemType,
+        authorId,
+        authorName,
+        shortcut,
+        shortcutId,
+        contestId
+    };
+}
+
 function getUserInfomation(id) {
     function strMatch(source, reg_exp, default_value) {
         let match_result = source.match(reg_exp);
@@ -164,7 +256,7 @@ function getUserInfomation(id) {
 }
 
 async function render() {
-    $('*').each(function() {
+    $('*').each(function () {
         if (this.innerHTML.match(/^ioi2021_[0-9]+$/g)) {
             let uid = parseInt(this.innerHTML.match(/ioi2021_[0-9]+/g)[0].slice(8));
             let name = userlist[uid];
@@ -224,6 +316,59 @@ async function mainRender() {
             $tr.append(`<td>${user.info}</td>`);
             $tr.append(`<td>${user.count}</td>`);
             $('.table tbody').append($tr);
+        }
+    }
+
+    if (location.pathname == '/problems' || location.pathname.startsWith('/problems/')) {
+        $('.table thead tr th').eq(2).css('width', '170px');
+        $('.table thead tr').eq(0).append('<th class="text-center" style="width: 120px;">来源</th>');
+        $('.table tbody tr').each(function(index, element) {
+            let $element = $(element);
+            let problemId = $element.children('td').eq(0).text().slice(1);
+            let { problemType, shortcut, contestId } = getProblemInfo(problemId);
+            
+            let extraContent = '';
+            if (problemType == '作业题') {
+                extraContent = `
+                    <a target="_blank" rel="noopener noreferrer" href="${config.url.codeforces}/gym/${contestId}/problem/${shortcut[1]}">
+                        ${shortcut}
+                    </a>
+                    <a target="_blank" rel="noopener noreferrer" href="${config.url.codeforces}/gym/${contestId}">
+                        (${contestId})
+                    </a>
+                `;
+            }
+
+            $element.append('<td>' + extraContent + '</td>');
+        });
+    }
+
+    if (location.pathname.startsWith('/problem/')) {
+        let problemId = parseInt(location.href.substr(location.href.lastIndexOf("problem/") + 8, 3), 10);
+        let { problemType, authorName, shortcut, shortcutId, contestId } = getProblemInfo(problemId);
+
+        $(".nav-tabs").eq(0).append(`<li>
+            <span style="display:block;padding:10px 15px;font-weight:bold;">
+                ${problemType}
+                <span style="font-weight:normal">by</span>
+                <a class="uoj-username" target="_blank" href="https://ioihw20.duck-ac.cn/user/profile/${authorName}" style="color:rgb(75,175,178)">
+                    <span style="font-weight: normal">${authorName}</span>
+                </a>
+            </span>
+        </li>`);
+        
+        if (problemType == '作业题') {
+            $(".nav-tabs").eq(0).append(`<li>
+                <span style="display:block;padding:10px 15px;">
+                    Source:&nbsp;&nbsp;
+                    <a target="_blank" rel="noopener noreferrer" href="${config.url.codeforces}/gym/${contestId}/problem/${shortcut[1]}">
+                        ${shortcut}
+                    </a>
+                    <a target="_blank" rel="noopener noreferrer" href="${config.url.codeforces}/gym/${contestId}">
+                        (${contestId})
+                    </a>
+                </span>
+            </li>`);
         }
     }
 
