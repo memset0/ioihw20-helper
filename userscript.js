@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.5.4
+// @version      0.5.5
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -227,7 +227,7 @@ function getProblemInfo(problemId) {
     };
 }
 
-function getUserInfomation(id) {
+function getUserInfo(id) {
     function strMatch(source, reg_exp, default_value) {
         let match_result = source.match(reg_exp);
         if (match_result) {
@@ -242,11 +242,14 @@ function getUserInfomation(id) {
         url: `https://ioihw20.duck-ac.cn/user/profile/ioi2021_${id}`,
     }).then((res) => {
         let info = strMatch(res, /<h4 class="list-group-item-heading">格言<\/h4>\s+<p class="list-group-item-text">(.*?)<\/p>/s, "<error>");
-        let count = strMatch(res, /AC 过的题目：共 (\d+) 道题/, -1);
-        if (res.match(/"\/problem\/1"/)) {
-            // A + B Problem 不统计在内
-            --count;
+        
+        let regex = /"\/problem\/(\d+)"/g, match, count = 0;
+        while (match = regex.exec(res)) {
+            let problemId = parseInt(match[1]);
+            let { problemType } = getProblemInfo(problemId);
+            count += problemType == '作业题';
         }
+
         return {
             id: id,
             info: info,
@@ -289,11 +292,13 @@ async function mainRender() {
     $('.navbar .navbar-nav').append('<li><a href="/ranklist">排行榜</a></li>')
 
     if (location.pathname == '/ranklist') {
+        document.title = document.title.replace('比赛排行榜', '排行榜');
+
         let userListPromised = [];
         $('.pagination').remove();
         $('.table tbody tr').remove();
         for (let userId = 0; userId < 81; userId++) {
-            userListPromised.push(getUserInfomation(userId));
+            userListPromised.push(getUserInfo(userId));
         }
         let userList = await Promise.all(userListPromised);
         userList.sort((firstUser, secondUser) => {
