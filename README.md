@@ -11,6 +11,7 @@
 * 替换用户名成真实姓名。
 * 通过题数排行榜。
 * 显示卷王。
+* 从 [xzz 那里](https://github.com/xzz-233/ioihw20-problem) 抄了个显示原题的功能过来。
 * 好像没了。
 
 ### Preview
