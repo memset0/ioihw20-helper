@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ioihw2020 做题工具
 // @namespace    https://ioihw2020.duck-ac.cn
-// @version      0.5.5
+// @version      0.5.6
 // @description  我啥时候也进个集训队啊
 // @author       memset0
 // @match        https://ioihw20.duck-ac.cn/
@@ -242,7 +242,7 @@ function getUserInfo(id) {
         url: `https://ioihw20.duck-ac.cn/user/profile/ioi2021_${id}`,
     }).then((res) => {
         let info = strMatch(res, /<h4 class="list-group-item-heading">格言<\/h4>\s+<p class="list-group-item-text">(.*?)<\/p>/s, "<error>");
-        
+
         let regex = /"\/problem\/(\d+)"/g, match, count = 0;
         while (match = regex.exec(res)) {
             let problemId = parseInt(match[1]);
@@ -325,13 +325,13 @@ async function mainRender() {
     }
 
     if (location.pathname == '/problems' || location.pathname.startsWith('/problems/')) {
-        $('.table thead tr th').eq(2).css('width', '170px');
+        $('.table thead tr th').eq($('.table thead tr th').length - 1).css('width', '170px');
         $('.table thead tr').eq(0).append('<th class="text-center" style="width: 120px;">来源</th>');
         $('.table tbody tr').each(function(index, element) {
             let $element = $(element);
             let problemId = $element.children('td').eq(0).text().slice(1);
             let { problemType, shortcut, contestId } = getProblemInfo(problemId);
-            
+
             let extraContent = '';
             if (problemType == '作业题') {
                 extraContent = `
@@ -361,7 +361,7 @@ async function mainRender() {
                 </a>
             </span>
         </li>`);
-        
+
         if (problemType == '作业题') {
             $(".nav-tabs").eq(0).append(`<li>
                 <span style="display:block;padding:10px 15px;">
