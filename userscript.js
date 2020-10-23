@@ -214,7 +214,7 @@ function getProblemInfo(problemId) {
     if (problemId == 1) authorName = 'root';
     else {
         authorId = (problemId - 101) >> 2;
-        authorName = 'ioi2021_' + (problemId < 300 ? (authorId < 10 ? '0' : '') + String(authorId) : problemId - 300 + 494 );
+        authorName = 'ioi2021_' + (problemId < 300 ? (authorId < 10 ? '0' : '') + String(authorId) : problemId - 300 + 49 );
     }
 
     return {
